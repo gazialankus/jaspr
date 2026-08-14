@@ -85,7 +85,14 @@ abstract class JasprRoute extends Route {
         mimeType: shelfResponse.mimeType != null ? MimeType.parse(shelfResponse.mimeType!) : null,
         contentLength: shelfResponse.contentLength,
       ),
-      headers: Headers.fromMap(shelfResponse.headersAll),
+      // Relic derives Content-Length/Transfer-Encoding from the Body. Copying
+      // them as literal headers desyncs the framing when middleware rewrites
+      // the body afterwards (e.g. Serverpod's dev auto-refresh injection).
+      headers: Headers.fromMap(
+        Map.of(shelfResponse.headersAll)
+          ..remove('content-length')
+          ..remove('transfer-encoding'),
+      ),
     );
 
     return response;
