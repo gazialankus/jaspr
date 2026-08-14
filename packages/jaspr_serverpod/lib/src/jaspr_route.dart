@@ -48,7 +48,10 @@ abstract class JasprRoute extends Route {
       request.url,
       protocolVersion: request.protocolVersion,
       headers: request.headers,
-      handlerPath: request.matchedPath.path,
+      // Relic's matchedPath is the full path consumed by the '/**' wildcard, not just the
+      // mount prefix, so using it as shelf's handlerPath strips the entire path and jaspr's
+      // router throws a RangeError. The route is mounted at root, so nothing is consumed.
+      handlerPath: '',
       body: request.body.read(),
       encoding: request.encoding,
       context: {'session': session, 'request': request},
